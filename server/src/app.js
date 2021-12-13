@@ -1,11 +1,12 @@
 import bodyParser from 'body-parser';
 import Express from 'express';
+import Compression from 'compression';
 import session from 'express-session';
 
 import { apiRouter } from './routes/api';
 import { staticRouter } from './routes/static';
 
-const app = Express();
+const app = Express(Compression());
 
 app.set('trust proxy', true);
 
