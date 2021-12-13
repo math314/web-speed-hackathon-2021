@@ -24,7 +24,7 @@ router.post('/sounds', async (req, res) => {
 
   const soundId = uuidv4();
 
-  const { artist, title } = await extractMetadataFromSound(req.body);
+  const { artist, title, misc } = await extractMetadataFromSound(req.body);
 
   const converted = await convertSound(req.body, {
     // 音声の拡張子を指定する
@@ -34,7 +34,7 @@ router.post('/sounds', async (req, res) => {
   const filePath = path.resolve(UPLOAD_PATH, `./sounds/${soundId}.${EXTENSION}`);
   await fs.writeFile(filePath, converted);
 
-  return res.status(200).type('application/json').send({ artist, id: soundId, title });
+  return res.status(200).type('application/json').send({ artist, id: soundId, title, misc });
 });
 
 export { router as soundRouter };
