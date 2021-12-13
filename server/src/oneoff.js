@@ -1,18 +1,23 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-import { extractMetadataFromSound } from './utils/extract_metadata_from_sound';
 import { PUBLIC_PATH } from './paths';
-import sounds from '../seeds/sounds.json';
+import images from '../seeds/images.json';
+import {convertImage} from './converters/convert_image';
 
-const EXTENSION = "mp3";
+const EXTENSION = "jpg";
 
 async function main() {
-    const remapped = await Promise.all(sounds.map(async (s) => {
-        const filePath = path.resolve(PUBLIC_PATH, `./sounds/${s.id}.${EXTENSION}`);
+    const remapped = await Promise.all(images.map(async (s) => {
+        const filePath = path.resolve(PUBLIC_PATH, `./images-original/${s.id}.${EXTENSION}`);
+        console.log(filePath);
         const data = await fs.readFile(filePath);
-        const extracted = await extractMetadataFromSound(data);
-        return {...extracted, ...s};
+        console.log(data);
+        const converted = await convertImage(data, {extension: EXTENSION, height:600, width:600});
+        console.log(converted);
+        const filePathDest = path.resolve(PUBLIC_PATH, `./images/${s.id}.${EXTENSION}`);
+        await fs.writeFile(filePathDest, converted);
+        return s;
     }));
     console.log(remapped);
 }

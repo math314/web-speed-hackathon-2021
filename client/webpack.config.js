@@ -84,7 +84,7 @@ const config = {
     },
   },
   optimization: {
-    // minimize: true,
+    minimize: true,
     minimizer: [
       new TerserPlugin({
         parallel: true,
