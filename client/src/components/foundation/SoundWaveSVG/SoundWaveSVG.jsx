@@ -14,7 +14,9 @@ async function calculate(data) {
     audioCtx.decodeAudioData(data.slice(0), resolve, reject);
   });
   // 左の音声データの絶対値を取る
+  console.log(buffer.getChannelData(0));
   const leftData = _.map(buffer.getChannelData(0), Math.abs);
+  console.log(buffer.getChannelData(1));
   // 右の音声データの絶対値を取る
   const rightData = _.map(buffer.getChannelData(1), Math.abs);
 
