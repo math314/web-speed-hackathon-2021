@@ -8,6 +8,12 @@ import { fetchBinary } from '../../../utils/fetchers';
 import { AspectRatioBox } from '../AspectRatioBox';
 import { FontAwesomeIcon } from '../FontAwesomeIcon';
 
+async function waitForNextAnimationFrame() {
+  new Promise((resolve, reject) => {
+    window.requestAnimationFrame(() => resolve());
+  });
+}
+
 /**
  * @typedef {object} Props
  * @property {string} src
@@ -33,7 +39,9 @@ const PausableMovie = ({ src }) => {
 
       // GIF を解析する
       const reader = new GifReader(new Uint8Array(data));
+      waitForNextAnimationFrame();
       const frames = Decoder.decodeFramesSync(reader);
+      waitForNextAnimationFrame();
       const animator = new Animator(reader, frames);
 
       animator.animateInCanvas(el);
