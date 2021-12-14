@@ -31,10 +31,8 @@ router.post('/images', async (req, res) => {
     // 画像の横サイズを指定する (undefined は元画像に合わせる)
     width: 600,
   });
-
   const filePath = path.resolve(UPLOAD_PATH, `./images/${imageId}.${EXTENSION}`);
   await fs.writeFile(filePath, converted);
-
   return res.status(200).type('application/json').send({ id: imageId });
 });
 

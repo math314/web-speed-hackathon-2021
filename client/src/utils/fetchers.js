@@ -1,18 +1,10 @@
-import { gzip } from 'pako';
-
 /**
  * @param {string} url
  * @returns {Promise<ArrayBuffer>}
  */
 async function fetchBinary(url) {
-  const result = await $.ajax({
-    async: false,
-    dataType: 'binary',
-    method: 'GET',
-    responseType: 'arraybuffer',
-    url,
-  });
-  return result;
+  const result = await fetch(url);
+  return result.arrayBuffer();
 }
 
 /**
@@ -20,15 +12,12 @@ async function fetchBinary(url) {
  * @param {string} url
  * @returns {Promise<T>}
  */
-async function fetchJSON(url) {
-  const result = await $.ajax({
-    async: false,
-    dataType: 'json',
-    method: 'GET',
-    url,
-  });
-  return result;
+ async function fetchJSON(url) {
+  const result = await fetch(url);
+  if (!result.ok) return null;
+  return result.json();
 }
+
 
 /**
  * @template T
@@ -37,18 +26,14 @@ async function fetchJSON(url) {
  * @returns {Promise<T>}
  */
 async function sendFile(url, file) {
-  const result = await $.ajax({
-    async: false,
-    data: file,
-    dataType: 'json',
-    headers: {
-      'Content-Type': 'application/octet-stream',
-    },
+  const result = await fetch(url, {
     method: 'POST',
-    processData: false,
-    url,
+    body: file,
+    headers: new Headers({
+      'Content-Type': 'application/octet-stream',
+    }),
   });
-  return result;
+  return result.json();
 }
 
 /**
@@ -58,23 +43,14 @@ async function sendFile(url, file) {
  * @returns {Promise<T>}
  */
 async function sendJSON(url, data) {
-  const jsonString = JSON.stringify(data);
-  const uint8Array = new TextEncoder().encode(jsonString);
-  const compressed = gzip(uint8Array);
-
-  const result = await $.ajax({
-    async: false,
-    data: compressed,
-    dataType: 'json',
+  const result = await fetch(url, {
+    method: 'POST',
     headers: {
-      'Content-Encoding': 'gzip',
       'Content-Type': 'application/json',
     },
-    method: 'POST',
-    processData: false,
-    url,
+    body: JSON.stringify(data),
   });
-  return result;
+  return result.json();
 }
 
 export { fetchBinary, fetchJSON, sendFile, sendJSON };

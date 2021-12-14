@@ -20,6 +20,7 @@ async function sendNewPost({ images, movie, sound, text }) {
     sound: sound ? await sendFile('/api/v1/sounds', sound) : undefined,
     text,
   };
+  console.log(payload);
 
   return sendJSON('/api/v1/posts', payload);
 }
