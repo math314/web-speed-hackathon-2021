@@ -3,17 +3,19 @@ import { ffmpeg } from '../ffmpeg';
 /**
  * 先頭 5 秒のみ、正方形にくり抜かれた無音動画を作成します
  * @param {Buffer} buffer
- * @param {object} options
- * @param {number} [options.extension]
- * @param {number} [options.size]
  * @returns {Promise<Uint8Array>}
  */
-async function convertMovie(buffer, options) {
-  const cropOptions = ["'min(iw,ih)':'min(iw,ih)'", options.size ? `scale=${options.size}:${options.size}` : undefined]
-    .filter(Boolean)
-    .join(',');
+async function convertMovie(buffer) {
+  const size = 574;
+  const cropOptions = `crop='min(iw,ih)':'min(iw,ih)',scale=${size}:${size}`;
 
-  const exportFile = `export.${options.extension ?? 'gif'}`;
+  const exportFile = `export.mp4`;
+
+
+  const args = ['-i', 'file',
+  '-movflags', 'faststart', '-pix_fmt', 'yuv420p',
+   '-vf', cropOptions, '-an', exportFile];
+   console.log(args.join(' '));
 
   if (ffmpeg.isLoaded() === false) {
     await ffmpeg.load();
@@ -21,7 +23,7 @@ async function convertMovie(buffer, options) {
 
   ffmpeg.FS('writeFile', 'file', new Uint8Array(buffer));
 
-  await ffmpeg.run(...['-i', 'file', '-t', '5', '-r', '10', '-vf', `crop=${cropOptions}`, '-an', exportFile]);
+  await ffmpeg.run(...args);
 
   return ffmpeg.FS('readFile', exportFile);
 }

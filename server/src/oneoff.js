@@ -13,9 +13,9 @@ async function main() {
         console.log(filePath);
         const data = await fs.readFile(filePath);
         // console.log(data);
-        const converted = await convertMovie(data, {extension: EXTENSION, size:333});
+        const converted = await convertMovie(data);
         // console.log(converted);
-        const filePathDest = path.resolve(PUBLIC_PATH, `./movies/${s.id}.${EXTENSION}`);
+        const filePathDest = path.resolve(PUBLIC_PATH, `./movies/${s.id}.mp4`);
         await fs.writeFile(filePathDest, converted);
         console.log(`${s} processing finished`);
     }
