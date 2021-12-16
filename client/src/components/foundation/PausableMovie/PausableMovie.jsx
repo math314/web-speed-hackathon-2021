@@ -22,8 +22,6 @@ async function waitForNextAnimationFrame() {
  * @type {React.VFC<Props>}
  */
 const PausableMovie = ({ src }) => {
-  const { data, isLoading } = useFetch(src, fetchBinary);
-
   /** @type {React.RefObject<HTMLVideoElement>} */
   const videoRef = React.useRef(null);
 
@@ -33,19 +31,13 @@ const PausableMovie = ({ src }) => {
 
   const [isPlaying, setIsPlaying] = React.useState(startWithPlaying);
   const handleClick = React.useCallback(() => {
-    setIsPlaying((isPlaying) => {
-      if (isPlaying) {
-        videoRef.current?.pause();
-      } else {
-        videoRef.current?.play();
-      }
-      return !isPlaying;
-    });
+    if(videoRef.current?.paused) {
+      videoRef.current?.play();
+    } else {
+      videoRef.current?.pause();
+    }
+    setIsPlaying(!videoRef.current?.paused);
   }, []);
-
-  if (isLoading || data === null) {
-    return null;
-  }
 
   return (
     <AspectRatioBox aspectHeight={1} aspectWidth={1}>
