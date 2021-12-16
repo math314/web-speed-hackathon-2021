@@ -1,24 +1,21 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
+import { extractMetadataFromSound } from './utils/extract_metadata_from_sound';
 import { PUBLIC_PATH } from './paths';
-import movies from '../seeds/movies.json';
-import {convertMovie} from './converters/convert_movie';
+import sounds from '../seeds/sounds.json';
 
-const EXTENSION = "gif";
+const EXTENSION = "mp3";
 
 async function main() {
-    for(const s of movies) {
-        const filePath = path.resolve(PUBLIC_PATH, `./movies-original/${s.id}.${EXTENSION}`);
-        console.log(filePath);
+    const mapped = [];
+    for(const s of sounds) {
+        const filePath = path.resolve(PUBLIC_PATH, `./sounds/${s.id}.${EXTENSION}`);
         const data = await fs.readFile(filePath);
-        // console.log(data);
-        const converted = await convertMovie(data);
-        // console.log(converted);
-        const filePathDest = path.resolve(PUBLIC_PATH, `./movies/${s.id}.mp4`);
-        await fs.writeFile(filePathDest, converted);
-        console.log(`${s} processing finished`);
+        const extracted = await extractMetadataFromSound(data);
+        mapped.push({...s, misc: extracted.misc});
     }
+    console.log(mapped);
 }
 
 main().catch(console.error);

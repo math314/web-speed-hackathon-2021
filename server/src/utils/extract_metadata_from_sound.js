@@ -1,56 +1,43 @@
 import * as MusicMetadata from 'music-metadata';
-import createBuffer from 'audio-buffer-from';
-import toArrayBuffer from 'to-array-buffer';
-import AV from 'av';
-import 'mp3';
+import { ffmpeg } from '../ffmpeg';
 import * as _ from 'lodash';
+// import { promises as fs } from 'fs';
 
-async function decodeToBuffer(buffer) {
-    buffer = Buffer.from(toArrayBuffer(buffer))
-  return new Promise((resolve, reject) => {
+async function getWavePeaks(data) {
+  if (ffmpeg.isLoaded() === false) {
+    await ffmpeg.load();
+  }
 
-    let asset = AV.Asset.fromBuffer(buffer)
+  let channels = [];
+  for(let i = 0; i < 2; i++) {
+    const mp3FileName = `input.mp3`;
+    const rawFileName = `filename_${i}.raw`;
+    // await fs.writeFile(mp3FileName, data);
 
-    asset.on('error', err => {
-      reject(err)
-    })
+    ffmpeg.FS('writeFile', mp3FileName, new Uint8Array(data));
+    const args = ['-i', mp3FileName,
+    '-map_channel', `0.0.${i}`, '-f', 's16le',
+     '-vn', rawFileName];
+    // console.log('ffmpeg ' + args.join(' '));
+    await ffmpeg.run(...args);
+    const rawUint8Data = await ffmpeg.FS('readFile', rawFileName);
+  
+    // await fs.writeFile(rawFileName, buffer);
+    // console.log(`generated ${rawFileName}`)
 
-    asset.decodeToBuffer((buffer) => {
-      let data = createBuffer(buffer, {
-        channels: asset.format.channelsPerFrame,
-        sampleRate: asset.format.sampleRate
-      })
-      resolve(data)
-    })
-  })
-}
+    let vals = new Int16Array(rawUint8Data.buffer, 0, rawUint8Data.length / 2);
 
+    const absed = _.map(vals, Math.abs);
+    const peaks = _.map(_.chunk(absed, Math.ceil(absed.length / 100)), _.mean);
+    for (let j = 0; j < peaks.length; j++) peaks[j] /= 32768.0;
+    channels.push(peaks);
+  }
 
-async function calculateAudioContext(data) {
-  // 音声をデコードする
-  /** @type {AudioBuffer} */
-  // const buffer = await new Promise((resolve, reject) => {
-  //   console.log("ready to decode");
-  //   audioCtx.decodeAudioData(data.slice(0), resolve, reject);
-  // });
-
-  const buffer = await decodeToBuffer(data);
-
-  // 左の音声データの絶対値を取る
-  const leftData = _.map(buffer.getChannelData(0), Math.abs);
-  // 右の音声データの絶対値を取る
-  const rightData = _.map(buffer.getChannelData(1), Math.abs);
-
-  // 左右の音声データの平均を取る
-  const normalized = _.map(_.zip(leftData, rightData), _.mean);
-  // 100 個の chunk に分ける
-  const chunks = _.chunk(normalized, Math.ceil(normalized.length / 100));
-  // chunk ごとに平均を取る
-  const peaks = _.map(chunks, _.mean);
-  // chunk の平均の中から最大値を取る
+  const peaks = _.map(_.zip(channels[0], channels[1]), _.mean);
   const max = _.max(peaks);
+  for(let i = 0; i < peaks.length; i++) peaks[i] /= max;
 
-  return { max, peaks };
+  return peaks;
 }
 
 /**
@@ -68,7 +55,7 @@ async function calculateAudioContext(data) {
 async function extractMetadataFromSound(data) {
   try {
     const metadata = await MusicMetadata.parseBuffer(data);
-    const misc = await calculateAudioContext(data);
+    const misc = await getWavePeaks(data);
     return {
       artist: metadata.common.artist,
       title: metadata.common.title,
