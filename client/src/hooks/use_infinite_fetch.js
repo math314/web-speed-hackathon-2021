@@ -41,7 +41,8 @@ export function useInfiniteFetch(apiPath, fetcher) {
       offset,
     };
 
-    const promise = fetcher(apiPath + `?limit=${LIMIT}&offset=${offset}`);
+    const useLimit = offset == 0 ? 5 : LIMIT;
+    const promise = fetcher(apiPath + `?limit=${useLimit}&offset=${offset}`);
 
     promise.then((moreData) => {
       setResult((cur) => {
