@@ -56,7 +56,7 @@ export function useInfiniteFetch(apiPath, fetcher) {
       });
       internalRef.current = {
         isLoading: false,
-        offset: offset + LIMIT,
+        offset: offset + useLimit,
       };
     });
 

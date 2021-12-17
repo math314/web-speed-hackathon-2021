@@ -3,7 +3,10 @@
  * @returns {string}
  */
 function getImagePath(imageId) {
-  return `/images/${imageId}.jpg`;
+  return {
+    src: `/images/${imageId}.jpg`,
+    smallSrc: `/images/${imageId}_small.jpg`,
+  };
 }
 
 /**

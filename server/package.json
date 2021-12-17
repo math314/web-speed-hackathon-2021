@@ -9,6 +9,7 @@
     "prestart": "npm-run-all prestart:clean prestart:init",
     "start": "babel-node --experimental-wasm-threads src/index.js",
     "oneoff": "babel-node src/oneoff.js",
+    "oneoff-images": "babel-node src/oneoff_images.js",
     "prestart:clean": "rimraf ../upload",
     "prestart:init": "mkdirp ../upload/images ../upload/movies ../upload/sounds"
   },

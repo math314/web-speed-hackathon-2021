@@ -17,7 +17,7 @@ async function convertImage(buffer, options) {
     options.width = null;
   }
   return image.resize({
-    fit: 'inside',
+    fit: 'cover',
     height: options.height,
     width: options.width,
   })
